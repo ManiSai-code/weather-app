@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Weather App</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 50px; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { padding: 10px; width: 70%; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .history { margin-top: 30px; text-align: left; font-size: 0.9em; color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🌤️ Weather Logger</h2>
+        <input type="text" id="cityInput" placeholder="Enter city (e.g. London)">
+        <button onclick="getWeather()">Search</button>
+
+        <div id="result"></div>
+
+        <div class="history">
+            <h3>Recent Searches:</h3>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+
+    <script>
+        async function getWeather() {
+            const city = document.getElementById('cityInput').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = "Loading...";
+
+            // 1. TALK TO OUR LOCAL SERVER (NOT OpenWeatherMap)
+            const response = await fetch('/get-weather', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city: city })
+            });
+
+            const data = await response.json();
+
+            // 2. DISPLAY RESULT
+            if (data.success) {
+                const info = data.data;
+                resultDiv.innerHTML = `
+                    <h3>${info.city}</h3>
+                    <h1>${info.temp}°C</h1>
+                    <p>${info.desc}</p>
+                    <img src="http://openweathermap.org/img/wn/${info.icon}@2x.png">
+                `;
+                updateHistory(); // Refresh the list
+            } else {
+                resultDiv.innerHTML = `<span style="color:red">${data.error}</span>`;
+            }
+        }
+
+        async function updateHistory() {
+            const response = await fetch('/history');
+            const history = await response.json();
+            const list = document.getElementById('historyList');
+            
+            list.innerHTML = history.map(item => 
+                `<li>${item.city}: ${item.temp}°C</li>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
