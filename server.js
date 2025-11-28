@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 
 // 1. CONFIGURATION
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const API_KEY = '438a576320238ec53e97f7cba35dd91b'; // <--- PASTE YOUR KEY HERE
 
 // Middleware (Parses data coming from the frontend)
@@ -62,4 +62,5 @@ app.get('/history', (req, res) => {
 // 3. START THE SERVER
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
+
 });
